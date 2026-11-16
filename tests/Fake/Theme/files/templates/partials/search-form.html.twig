@@ -1,0 +1,5 @@
+<form role="search" method="get" action="{{ action }}">
+<label for="search-q">{{ t('Search') }}</label>
+<input id="search-q" type="search" name="q" value="{{ query|default('') }}">
+<button type="submit">{{ t('Search') }}</button>
+</form>

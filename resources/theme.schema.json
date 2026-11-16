@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sightpress.org/schema/theme-interface/0.1/theme.schema.json",
+  "title": "SightPress theme.json",
+  "description": "Design tokens of a SightPress theme. Core also checks what a schema can't: colors.light and colors.dark define the same colours, colors.more only changes known colours, contrast and chart name known colours, and every contrast pair has enough contrast in every colour mode.",
+  "type": "object",
+  "required": ["name", "label", "version", "colors", "typography"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "description": "The theme id; must equal the id in the theme's manifest.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "label": {
+      "description": "Name shown to people.",
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "version": {
+      "description": "The theme's version (Semantic Versioning); must equal the version in the theme's manifest.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "colors": {
+      "type": "object",
+      "required": ["light", "dark"],
+      "additionalProperties": false,
+      "properties": {
+        "light": {
+          "$ref": "#/$defs/palette",
+          "required": ["background", "text", "link", "primary", "on-primary", "border", "focus"]
+        },
+        "dark": {
+          "$ref": "#/$defs/palette"
+        },
+        "more": {
+          "description": "Colours that change when people ask for more contrast (prefers-contrast: more).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "light": {
+              "$ref": "#/$defs/palette"
+            },
+            "dark": {
+              "$ref": "#/$defs/palette"
+            }
+          }
+        }
+      }
+    },
+    "typography": {
+      "$ref": "#/$defs/tokens",
+      "required": ["size-base"]
+    },
+    "spacing": {
+      "$ref": "#/$defs/tokens"
+    },
+    "radius": {
+      "$ref": "#/$defs/tokens"
+    },
+    "focus": {
+      "$ref": "#/$defs/tokens"
+    },
+    "contrast": {
+      "description": "Colour pairs core checks in every colour mode: text needs 4.5:1, interface colours 3:1 (WCAG 2.2 AA).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/pairs"
+        },
+        "ui": {
+          "$ref": "#/$defs/pairs"
+        }
+      }
+    },
+    "chart": {
+      "description": "Colours charts use, as names of the theme's colours.",
+      "type": "object",
+      "required": ["series"],
+      "additionalProperties": false,
+      "properties": {
+        "series": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/colorName"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "colorName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "palette": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/colorName"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "description": "A plain CSS value: letters, digits, spaces and . , % # ( ) + * / ' \" - and no comment.",
+        "oneOf": [
+          {
+            "type": "string",
+            "pattern": "^(?!.*\\/\\*)[A-Za-z0-9 .,%#()+*\\/'\"-]+$"
+          },
+          {
+            "type": "number"
+          }
+        ]
+      }
+    },
+    "pairs": {
+      "type": "array",
+      "items": {
+        "description": "[foreground, background]",
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/$defs/colorName"
+          },
+          {
+            "$ref": "#/$defs/colorName"
+          }
+        ],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  }
+}
