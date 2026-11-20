@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/sightpress/theme-interface/compare/0.1.1...0.2.0) (2026-11-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* colors.light must define the six chart colours (chart-1 … chart-4, chart-grid, chart-text), and ThemeTokens::$chart is never null.
+
+### Features
+
+* add the preview page and previewDescription, and deprecate Screenshot (TI-0.2b) ([#7](https://github.com/sightpress/theme-interface/issues/7)) ([b502932](https://github.com/sightpress/theme-interface/commit/b502932ec7b127de9930de0d6cebc3072ac2f8ab))
+* align the contract with M2: chart colours, search landmark, layouts (TI-0.2) ([#5](https://github.com/sightpress/theme-interface/issues/5)) ([605c76f](https://github.com/sightpress/theme-interface/commit/605c76f0aee9d8557cd1b103b40d2e6428a01ada))
+
 ## [0.1.1](https://github.com/sightpress/theme-interface/compare/0.1.0...0.1.1) (2026-11-19)
 
 
