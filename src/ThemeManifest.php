@@ -154,6 +154,26 @@ final readonly class ThemeManifest
     }
 
     /**
+     * Whether the theme provides the layout.
+     */
+    public function provides(string $id): bool
+    {
+        return $this->layout($id) !== null;
+    }
+
+    /**
+     * The layouts editors can pick for a page, in the order the theme lists them.
+     *
+     * @return non-empty-list<LayoutDefinition>
+     */
+    public function pageLayouts(): array
+    {
+        $layouts = array_values(array_filter($this->layouts, static fn (LayoutDefinition $layout): bool => $layout->isPageLayout()));
+
+        return $layouts === [] ? [LayoutDefinition::required()[0]] : $layouts;
+    }
+
+    /**
      * The layout core shows a page with: the page's own layout when the theme provides it, otherwise
      * {@see LayoutDefinition::FALLBACK}.
      */

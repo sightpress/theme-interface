@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use SightPress\Theme\Exception\InvalidValueException;
 use SightPress\Theme\Token\ColorMode;
+use SightPress\Theme\Token\ChartTokens;
 use SightPress\Theme\Token\ColorTokens;
 use SightPress\Theme\Internal\Guard;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -29,6 +30,12 @@ final class ColorTokensTest extends TestCase
             'on-primary' => '#fff',
             'border' => '#6b6b78',
             'focus' => $text,
+            'chart-1' => '#0a57c2',
+            'chart-2' => '#a14800',
+            'chart-3' => '#1d6b33',
+            'chart-4' => '#7b2c94',
+            'chart-grid' => '#d4d4dc',
+            'chart-text' => $text,
         ];
     }
 
@@ -41,7 +48,7 @@ final class ColorTokensTest extends TestCase
             ['background' => '#000'],
         );
 
-        self::assertSame(ColorTokens::REQUIRED, $colors->names());
+        self::assertSame([...ColorTokens::REQUIRED, ...ChartTokens::COLORS], $colors->names());
         self::assertTrue($colors->has('link'));
         self::assertFalse($colors->has('mark'));
         self::assertSame('#1a1a1f', $colors->color('text', ColorMode::Light));
@@ -52,6 +59,17 @@ final class ColorTokensTest extends TestCase
         self::assertSame('#ececf1', $colors->color('text', ColorMode::DarkMore));
         self::assertSame('#0A57C2', $colors->colors(ColorMode::Light)['primary']);
         self::assertNull($colors->color('mark', ColorMode::Dark));
+    }
+
+    public function testRefusesMissingChartColours(): void
+    {
+        $light = self::palette();
+        unset($light['chart-2'], $light['chart-text']);
+
+        $this->expectExceptionObject(new InvalidValueException(
+            'colors.light must define the chart colours "chart-2", "chart-text": chart-1 to chart-4 for lines and bars, chart-grid and chart-text.',
+        ));
+        new ColorTokens($light, $light);
     }
 
     public function testRefusesAMissingRequiredColour(): void

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sightpress.org/schema/theme-interface/0.1/theme.schema.json",
+  "$id": "https://sightpress.org/schema/theme-interface/0.2/theme.schema.json",
   "title": "SightPress theme.json",
   "description": "Design tokens of a SightPress theme. Core also checks what a schema can't: colors.light and colors.dark define the same colours, colors.more only changes known colours, contrast and chart name known colours, and every contrast pair has enough contrast in every colour mode.",
   "type": "object",
@@ -33,7 +33,7 @@
       "properties": {
         "light": {
           "$ref": "#/$defs/palette",
-          "required": ["background", "text", "link", "primary", "on-primary", "border", "focus"]
+          "required": ["background", "text", "link", "primary", "on-primary", "border", "focus", "chart-1", "chart-2", "chart-3", "chart-4", "chart-grid", "chart-text"]
         },
         "dark": {
           "$ref": "#/$defs/palette"
@@ -80,7 +80,7 @@
       }
     },
     "chart": {
-      "description": "Colours charts use, as names of the theme's colours.",
+      "description": "Which of the theme's colours the data series of a chart use, in order; without it they use chart-1 to chart-4. Core checks each series colour for 3:1 and chart-text for 4.5:1 on background and surface in every colour mode.",
       "type": "object",
       "required": ["series"],
       "additionalProperties": false,

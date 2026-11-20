@@ -56,7 +56,18 @@ final class ThemeTokensTest extends TestCase
         $tokens = new ThemeTokens(self::colors(), ['typography' => ['size-base' => '1rem']]);
 
         self::assertSame([], $tokens->contrast);
-        self::assertNull($tokens->chart);
+        self::assertSame(ChartTokens::MARKS, $tokens->chart->series);
+    }
+
+    public function testCheckedPairsAreTheThemesThenTheCharts(): void
+    {
+        $text = new ColorPair('text', 'background', ColorUse::Text);
+        $tokens = new ThemeTokens(self::colors(), ['typography' => ['size-base' => '1rem']], [$text], new ChartTokens(['primary']));
+
+        self::assertEquals(
+            [$text, new ColorPair('primary', 'background', ColorUse::Ui), new ColorPair('chart-text', 'background', ColorUse::Text)],
+            $tokens->checkedPairs(),
+        );
     }
 
     /**
@@ -101,8 +112,8 @@ final class ThemeTokensTest extends TestCase
             'The text pair "text" on "surface" names the colour "surface", which colors.light doesn\'t define.',
         ];
         yield 'chart with an unknown colour' => [
-            static fn (): ThemeTokens => new ThemeTokens(self::colors(), $typography, [], new ChartTokens(['primary', 'chart-2'])),
-            'chart.series names the colour "chart-2", which colors.light doesn\'t define.',
+            static fn (): ThemeTokens => new ThemeTokens(self::colors(), $typography, [], new ChartTokens(['primary', 'chart-9'])),
+            'chart.series names the colour "chart-9", which colors.light doesn\'t define.',
         ];
     }
 

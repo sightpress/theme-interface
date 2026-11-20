@@ -31,6 +31,7 @@ final class ThemeSchemaTest extends TestCase
         yield 'version not SemVer' => [['version' => 'v1'] + $theme];
         yield 'unknown top-level key' => [['scripts' => []] + $theme];
         yield 'required colour missing' => [self::with($theme, ['colors', 'light'], ['background' => '#fff'])];
+        yield 'chart colour missing' => [self::with($theme, ['colors', 'light', 'chart-text'], null, true)];
         yield 'colour not hex' => [self::with($theme, ['colors', 'dark', 'text'], 'red')];
         yield 'colour name not kebab case' => [self::with($theme, ['colors', 'dark', 'Text'], '#000')];
         yield 'unknown colour mode' => [self::with($theme, ['colors', 'sepia'], [])];
@@ -65,6 +66,12 @@ final class ThemeSchemaTest extends TestCase
             'on-primary' => '#fff',
             'border' => '#6b6b78',
             'focus' => '#1a1a1f',
+            'chart-1' => '#0a57c2',
+            'chart-2' => '#a14800',
+            'chart-3' => '#1d6b33',
+            'chart-4' => '#7b2c94',
+            'chart-grid' => '#d4d4dc',
+            'chart-text' => '#1a1a1f',
         ];
 
         return [
@@ -85,17 +92,20 @@ final class ThemeSchemaTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    private static function with(array $data, array $path, mixed $value): array
+    private static function with(array $data, array $path, mixed $value, bool $remove = false): array
     {
         $key = array_shift($path);
         if ($path === []) {
             $data[$key] = $value;
+            if ($remove) {
+                unset($data[$key]);
+            }
 
             return $data;
         }
         /** @var array<string, mixed> $child */
         $child = is_array($data[$key] ?? null) ? $data[$key] : [];
-        $data[$key] = self::with($child, $path, $value);
+        $data[$key] = self::with($child, $path, $value, $remove);
 
         return $data;
     }

@@ -11,7 +11,7 @@ namespace SightPress\Theme;
 final class ThemeSchema
 {
     /** The schema's `$id`; it changes with every minor release of this package that changes the schema. */
-    public const string ID = 'https://sightpress.org/schema/theme-interface/0.1/theme.schema.json';
+    public const string ID = 'https://sightpress.org/schema/theme-interface/0.2/theme.schema.json';
 
     /**
      * Absolute path of the schema file.

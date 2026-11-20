@@ -38,6 +38,29 @@ final class LayoutDefinitionTest extends TestCase
         self::assertContains(LayoutDefinition::FALLBACK, LayoutDefinition::REQUIRED);
     }
 
+    public function testTheStandardLayouts(): void
+    {
+        $layouts = LayoutDefinition::standard();
+
+        self::assertSame(LayoutDefinition::STANDARD, array_map(static fn (LayoutDefinition $layout): string => $layout->id, $layouts));
+        foreach ($layouts as $layout) {
+            self::assertTrue($layout->isStandard());
+            self::assertFalse($layout->isRequired());
+            self::assertTrue($layout->isPageLayout());
+            self::assertNotSame('', $layout->description);
+        }
+        self::assertSame([], array_intersect(LayoutDefinition::STANDARD, LayoutDefinition::REQUIRED));
+    }
+
+    public function testOnlyTheSearchLayoutIsNotForPages(): void
+    {
+        $pages = array_map(static fn (LayoutDefinition $layout): bool => $layout->isPageLayout(), LayoutDefinition::required());
+
+        self::assertSame([true, true, false], $pages);
+        self::assertFalse(LayoutDefinition::required()[0]->isStandard());
+        self::assertTrue(new LayoutDefinition('acme-gallery', 'Gallery')->isPageLayout());
+    }
+
     public function testRefusesAnInvalidId(): void
     {
         $this->expectExceptionObject(new InvalidValueException(

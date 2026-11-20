@@ -2,7 +2,14 @@
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
-{% include 'partials/search-form.html.twig' with {action: '/search', query: query} only %}
-<p role="status">{{ t('%count% results', {'%count%': total}) }}</p>
-{% block content %}<ul>{% for result in results %}<li><a href="{{ result.url }}">{{ result.title }}</a> {{ result.excerpt }}</li>{% endfor %}</ul>{% endblock %}
+{% include 'partials/search-form.html.twig' with {action: action, query: query, label: t('Search for')} only %}
+{% block content %}
+{%- if state == 'results' %}
+<ol start="{{ first }}">{% for result in results %}<li><h2><a href="{{ result.url }}">{{ result.title }}</a></h2><p>{% for piece in result.extract %}{% if piece.mark %}<mark>{{ piece.text }}</mark>{% else %}{{ piece.text }}{% endif %}{% endfor %}</p></li>{% endfor %}</ol>
+{%- elseif state == 'busy' %}
+<p>{{ t('Wait {minutes} minutes, then search again.', {minutes: retry_minutes}) }}</p>
+{%- else %}
+<p>{{ t('Check the spelling of each word.') }}</p>
+{%- endif %}
+{% endblock %}
 {% endblock %}

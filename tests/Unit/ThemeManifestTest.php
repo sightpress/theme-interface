@@ -77,6 +77,25 @@ final class ThemeManifestTest extends TestCase
         self::assertSame('home', $manifest->resolveLayout('home')->id);
         self::assertSame('default', $manifest->resolveLayout('landing')->id);
         self::assertNull($manifest->layout('landing'));
+        self::assertTrue($manifest->provides('search'));
+        self::assertFalse($manifest->provides('landing'));
+    }
+
+    public function testPageLayoutsLeaveOutTheSearchLayout(): void
+    {
+        $manifest = new ThemeManifest(
+            'harbour',
+            'Harbour',
+            'Calm blues.',
+            '1.0.0',
+            new ThemeRequirement('^0.2'),
+            [...LayoutDefinition::required(), ...LayoutDefinition::standard()],
+        );
+
+        self::assertSame(
+            ['default', 'home', 'landing', 'sidebar', 'full-width'],
+            array_map(static fn (LayoutDefinition $layout): string => $layout->id, $manifest->pageLayouts()),
+        );
     }
 
     public function testSupportsEveryLocaleWhenNoneAreListed(): void

@@ -9,8 +9,12 @@ use SightPress\Theme\Internal\Guard;
 /**
  * A page layout a theme provides, such as `default` or `home`, in `templates/layouts/<id>.html.twig`.
  *
- * Every theme provides the {@see REQUIRED} layouts. A page that uses a layout the site's theme doesn't provide is
- * shown with {@see FALLBACK}.
+ * The theme's manifest lists every layout it provides ({@see ThemeManifest::$layouts}). Every theme provides the
+ * {@see REQUIRED} layouts; {@see STANDARD} names the optional ones core knows by name, so pages keep their layout
+ * when the site switches between themes that both provide it. A theme may add layouts of its own. A page that uses a
+ * layout the site's theme doesn't provide is shown with {@see FALLBACK}, and core lists those pages before a switch.
+ *
+ * Editors pick a page's layout from the theme's {@see isPageLayout() page layouts}; `search` is only for site search.
  */
 final readonly class LayoutDefinition
 {
@@ -18,8 +22,18 @@ final readonly class LayoutDefinition
     public const string HOME = 'home';
     public const string SEARCH = 'search';
 
+    public const string LANDING = 'landing';
+    public const string SIDEBAR = 'sidebar';
+    public const string FULL_WIDTH = 'full-width';
+
     /** Layouts every theme must provide. */
     public const array REQUIRED = [self::DEFAULT, self::HOME, self::SEARCH];
+
+    /** Optional layouts core knows by name; a theme that provides one uses this id for it. */
+    public const array STANDARD = [self::LANDING, self::SIDEBAR, self::FULL_WIDTH];
+
+    /** Layouts core uses for its own pages, which editors can't pick for a page. */
+    public const array SYSTEM = [self::SEARCH];
 
     /** The layout used when a page's layout is not provided by the theme. */
     public const string FALLBACK = self::DEFAULT;
@@ -54,6 +68,36 @@ final readonly class LayoutDefinition
     public function isRequired(): bool
     {
         return in_array($this->id, self::REQUIRED, true);
+    }
+
+    /**
+     * Whether editors can pick the layout for a page (every layout but the {@see SYSTEM} ones).
+     */
+    public function isPageLayout(): bool
+    {
+        return !in_array($this->id, self::SYSTEM, true);
+    }
+
+    /**
+     * Whether the layout is one of the {@see STANDARD} optional layouts.
+     */
+    public function isStandard(): bool
+    {
+        return in_array($this->id, self::STANDARD, true);
+    }
+
+    /**
+     * The {@see STANDARD} optional layouts with their standard labels, for themes that provide them.
+     *
+     * @return non-empty-list<self>
+     */
+    public static function standard(): array
+    {
+        return [
+            new self(self::LANDING, 'Landing', 'A wide introduction band, then content in full-width sections.'),
+            new self(self::SIDEBAR, 'Sidebar', 'Content with a side column for related links and notes.'),
+            new self(self::FULL_WIDTH, 'Full width', 'Content across the whole page width, without a reading column.'),
+        ];
     }
 
     /**

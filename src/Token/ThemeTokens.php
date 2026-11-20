@@ -35,19 +35,23 @@ final readonly class ThemeTokens
     /** @var list<ColorPair> */
     public array $contrast;
 
+    public ChartTokens $chart;
+
     /**
      * @param array<value-of<TokenGroup>, array<int|string, string>> $values   other tokens by group, for example
      *                                                                         `['typography' => ['size-base' => '1rem']]`
      * @param list<ColorPair>                                        $contrast colour pairs core checks for contrast
-     * @param ChartTokens|null                                       $chart    chart colours, or null for core's
-     *                                                                         default (`primary` only)
+     * @param ChartTokens|null                                       $chart    the series colours from
+     *                                                                         `chart.series`, or null for the
+     *                                                                         {@see ChartTokens::MARKS}
      */
     public function __construct(
         public ColorTokens $colors,
         array $values = [],
         array $contrast = [],
-        public ?ChartTokens $chart = null,
+        ?ChartTokens $chart = null,
     ) {
+        $this->chart = $chart ?? new ChartTokens();
         $groups = [];
         foreach ($values as $group => $tokens) {
             $kind = TokenGroup::tryFrom((string) $group);
@@ -84,7 +88,7 @@ final readonly class ThemeTokens
             }
         }
 
-        foreach ($chart->series ?? [] as $name) {
+        foreach ($this->chart->series as $name) {
             $this->known($name, 'chart.series');
         }
     }
@@ -115,6 +119,17 @@ final readonly class ThemeTokens
     public function pairs(ColorUse $use): array
     {
         return array_values(array_filter($this->contrast, static fn (ColorPair $pair): bool => $pair->use === $use));
+    }
+
+    /**
+     * Every pair core checks for contrast: the theme's own `contrast` pairs, then the chart pairs
+     * ({@see ChartTokens::contrastPairs()}).
+     *
+     * @return list<ColorPair>
+     */
+    public function checkedPairs(): array
+    {
+        return [...$this->contrast, ...$this->chart->contrastPairs($this->colors)];
     }
 
     private function known(string $name, string $where): void

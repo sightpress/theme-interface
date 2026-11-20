@@ -20,7 +20,7 @@ package and names its theme class in `composer.json`:
 ```json
 {
   "type": "sightpress-theme",
-  "require": { "sightpress/theme-interface": "^0.1" },
+  "require": { "sightpress/theme-interface": "^0.2" },
   "extra": { "sightpress": { "theme": "Acme\\Harbour\\HarbourTheme" } }
 }
 ```
@@ -29,7 +29,8 @@ package and names its theme class in `composer.json`:
 
 - `ThemeInterface`: what every theme implements: `manifest()` and `paths()`.
 - `ThemeManifest`: the theme's id, name, description and version, the `ThemeRequirement` (the versions of this
-  package it works with), the layouts it provides (`LayoutDefinition`), the languages its own strings are
+  package it works with), the layouts it provides (`LayoutDefinition`; `pageLayouts()` are the ones editors can
+  pick), the languages its own strings are
   translated to, whether it supports right-to-left scripts, a `Screenshot` with alt text for the theme picker,
   suggested modules, author and licence.
 - `ThemePaths`: the theme folder and the standard places in it: `theme.json`, `templates/`, `assets/` and
@@ -37,10 +38,17 @@ package and names its theme class in `composer.json`:
 - `ThemeSchema` and `resources/theme.schema.json`: the JSON Schema (draft 2020-12) of `theme.json`.
 - `Token\ThemeTokens`: typed design tokens: `ColorTokens` for light and dark mode, each with "more contrast"
   overrides (`ColorMode`); the `TokenGroup`s typography, spacing, radius and focus; the `ColorPair`s whose
-  contrast core checks (`ColorUse`: 4.5:1 for text, 3:1 for interface colours, WCAG 2.2 AA); and `ChartTokens`.
+  contrast core checks (`ColorUse`: 4.5:1 for text, 3:1 for interface colours, WCAG 2.2 AA); and `ChartTokens`:
+  every theme defines `chart-1` to `chart-4` (lines and bars), `chart-grid` and `chart-text`, and core always
+  checks the series colours (3:1) and the chart text (4.5:1) on `background` and `surface` (`checkedPairs()`).
+- `LayoutDefinition`: the required layouts `default`, `home` and `search`, and the standard optional ones
+  `landing`, `sidebar` and `full-width` (fixed ids, so a page keeps its layout when the site changes theme). A page
+  whose layout the theme doesn't provide is shown with `default`.
 - `Template\RequiredTemplates`: the templates every theme must provide (`master.html.twig`, the layouts
   `default`, `home` and `search`, and the partials `messages` and `search-form`), each a `TemplateDefinition`
-  with the variables core passes (`TemplateVariable`) and the blocks it must define.
+  with the variables core passes (`TemplateVariable`) and the blocks it must define. `forLayout()` gives the
+  definition for any layout, including the standard and the theme's own ones. The search form is a `<search>`
+  landmark; the search page says how many results there are in its `<title>` and `<h1>`, not in a live region.
 - `Template\CorePartial`: the core partials a theme must include, such as the `<head>` partial with meta,
   canonical links and JSON-LD, so a theme can't drop them.
 - `Template\TemplateApi`: the Twig functions and filters core provides to theme templates (`asset`, `t`, `can`,

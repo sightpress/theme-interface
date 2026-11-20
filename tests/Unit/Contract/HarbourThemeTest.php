@@ -99,7 +99,8 @@ final class HarbourThemeTest extends TestCase
         self::assertSame('1.125rem', $tokens->value(TokenGroup::Typography, 'size-base'));
         self::assertNotEmpty($tokens->pairs(ColorUse::Text));
         self::assertNotEmpty($tokens->pairs(ColorUse::Ui));
-        self::assertSame(['primary', 'success', 'warning', 'error'], $tokens->chart?->series);
+        self::assertSame(['primary', 'success', 'warning', 'error'], $tokens->chart->series);
+        self::assertCount(count($tokens->contrast) + 10, $tokens->checkedPairs());
     }
 
     /**
@@ -124,6 +125,27 @@ final class HarbourThemeTest extends TestCase
         foreach ($template->blocks as $block) {
             self::assertMatchesRegularExpression(sprintf('/\{%%-?\s*block\s+%s\b/', $block), $source, $block);
         }
+    }
+
+    public function testEveryLayoutOfTheManifestExistsAndDefinesItsBlocks(): void
+    {
+        foreach ($this->theme->manifest()->layouts as $layout) {
+            $path = $this->theme->paths()->templates() . '/' . $layout->template();
+            self::assertFileExists($path);
+            $source = (string) file_get_contents($path);
+            self::assertStringContainsString("{% extends 'master.html.twig' %}", $source);
+            foreach (RequiredTemplates::forLayout($layout)->blocks as $block) {
+                self::assertMatchesRegularExpression(sprintf('/\{%%-?\s*block\s+%s\b/', $block), $source, $block);
+            }
+        }
+    }
+
+    public function testTheSearchFormIsASearchLandmarkAndTheResultsHaveNoLiveRegion(): void
+    {
+        $templates = $this->theme->paths()->templates();
+
+        self::assertStringContainsString('<search ', (string) file_get_contents($templates . '/' . RequiredTemplates::SEARCH_FORM));
+        self::assertStringNotContainsString('role=', (string) file_get_contents($templates . '/layouts/search.html.twig'));
     }
 
     public function testTheShellIncludesTheCorePartials(): void

@@ -9,15 +9,20 @@ Who uses it: theme authors (developers and designers); core uses it to discover,
 - Package: `sightpress/theme-interface`, namespace `SightPress\Theme\`. No runtime dependencies.
 - A theme is a Composer package of type `sightpress-theme` with `extra.sightpress.theme` set to its theme class.
 - Files in a theme: `theme.json`, `templates/` (at least `RequiredTemplates::files()`), `assets/`, `translations/`.
-- Required layouts: `default`, `home`, `search`; a page whose layout the theme doesn't provide uses `default`.
+- Required layouts: `default`, `home`, `search`; standard optional layouts: `landing`, `sidebar` (blocks
+  `content` + `aside`), `full-width`; a page whose layout the theme doesn't provide uses `default`. Editors pick
+  from `ThemeManifest::pageLayouts()` (all but `search`).
+- Required colours include the chart colours `chart-1` … `chart-4`, `chart-grid`, `chart-text` (0.2).
 - `theme.json` schema: `resources/theme.schema.json` (`ThemeSchema::ID`), draft 2020-12.
 
 Accessibility:
 
 - Contrast pairs declared under `contrast` are checked by core in light, dark and both "more contrast" modes:
-  4.5:1 for `text` pairs, 3:1 for `ui` pairs (WCAG 2.2 AA). Chart series colours need 3:1 against the background.
+  4.5:1 for `text` pairs, 3:1 for `ui` pairs (WCAG 2.2 AA). Chart series colours need 3:1 and `chart-text` 4.5:1
+  on `background` and `surface`, always checked (`ThemeTokens::checkedPairs()`).
 - The shell must set `lang` and `dir`, have a skip link and landmarks, show messages in a polite live region, and
-  include the core `<head>` partial.
+  include the core `<head>` partial. The search form is a `<search>` landmark named by its visible label; the
+  search page announces the number of results through `<title>` and `<h1>`, not a live region.
 - Screenshots need alt text that describes the look of the theme.
 
 Code: `src/`; contract tests with a fake third-party theme in `tests/Unit/Contract/` and `tests/Fake/Theme/`.

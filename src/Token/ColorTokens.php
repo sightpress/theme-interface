@@ -13,7 +13,10 @@ use SightPress\Theme\Internal\Guard;
  */
 final readonly class ColorTokens
 {
-    /** Colours every theme must define: core uses them for generated images, the web manifest and focus rings. */
+    /**
+     * Colours every theme must define: core uses them for generated images, the web manifest and focus rings. Every
+     * theme also defines the {@see ChartTokens::COLORS}.
+     */
     public const array REQUIRED = ['background', 'text', 'link', 'primary', 'on-primary', 'border', 'focus'];
 
     /** `#rgb` or `#rrggbb`, upper- or lower-case. */
@@ -51,6 +54,14 @@ final readonly class ColorTokens
             throw new InvalidValueException(sprintf(
                 'colors.light must define the colours "%s".',
                 implode('", "', $missing),
+            ));
+        }
+
+        $missingChart = array_diff(ChartTokens::COLORS, array_keys($this->light));
+        if ($missingChart !== []) {
+            throw new InvalidValueException(sprintf(
+                'colors.light must define the chart colours "%s": chart-1 to chart-4 for lines and bars, chart-grid and chart-text.',
+                implode('", "', $missingChart),
             ));
         }
 
