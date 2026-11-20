@@ -78,6 +78,45 @@ documentation, a README or a release, and on every pull request, is made from it
 the theme as it is. Describe what the top of that page looks like in `previewDescription`, for example "A dark
 blue top bar, then a large white heading on a pale blue band and a yellow Download button".
 
+### A preview on every pull request
+
+Every theme repo can show reviewers what a change looks like without installing anything. Add two small workflows
+that call the reusable ones in this repo, pinned to a tag:
+
+```yaml
+# .github/workflows/theme-preview.yml
+name: Theme preview
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  preview:
+    uses: sightpress/theme-interface/.github/workflows/theme-preview.yml@0.2.1
+```
+
+```yaml
+# .github/workflows/theme-preview-comment.yml
+name: Theme preview comment
+on:
+  workflow_run:
+    workflows: [Theme preview]
+    types: [completed]
+permissions:
+  actions: read
+  pull-requests: write
+jobs:
+  comment:
+    uses: sightpress/theme-interface/.github/workflows/theme-preview-comment.yml@0.2.1
+```
+
+The first workflow installs the theme with core as a dev dependency (`sightpress/core` in `require-dev`), runs
+`theme:validate` and `theme:preview --screenshot`, scans the preview page with axe in light, dark and forced-colors
+mode, and uploads one artifact: the static preview (open `index.html`; it works offline), `screenshot.png`,
+`screenshot-dark.png`, `page.png`, `axe.txt` and a `README.txt`. It has a read-only token and no secrets, so pull
+requests from forks get it too. The second workflow never runs the pull request's code: it reads only a small
+`preview.json` and keeps one comment on the pull request up to date, with the download link, the theme's
+`previewDescription` and the axe result for each mode. Nothing is committed: no screenshot ever goes into the repo.
+
 ## Requirements
 
 - PHP 8.5 or later

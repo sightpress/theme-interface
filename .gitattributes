@@ -1,0 +1,16 @@
+# Only src/, resources/, the licence and the documentation people need ship in the Composer package. The reusable
+# workflows (.github/workflows/theme-preview*.yml) are used straight from this repo, pinned to a tag, and never ship.
+/.github export-ignore
+/docs export-ignore
+/docs-todo export-ignore
+/tests export-ignore
+/tools export-ignore
+/.editorconfig export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/.release-please-manifest.json export-ignore
+/phpstan.dist.neon export-ignore
+/phpunit.xml.dist export-ignore
+/rector.php export-ignore
+/release-please-config.json export-ignore

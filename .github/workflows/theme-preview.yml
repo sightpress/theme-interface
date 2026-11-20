@@ -1,0 +1,225 @@
+# Theme preview on every pull request (reusable). A theme repo calls it from its own workflow, pinned to a
+# theme-interface tag:
+#
+#   on: pull_request
+#   permissions:
+#     contents: read
+#   jobs:
+#     preview:
+#       uses: sightpress/theme-interface/.github/workflows/theme-preview.yml@0.2.1
+#
+# It installs the theme with core as a dev dependency, runs `theme:validate` and `theme:preview --screenshot`, scans
+# the preview page with axe in light, dark and forced-colors mode, and uploads one artifact: the static preview folder
+# (open index.html; it works offline), the screenshots, the axe report and a README. A reviewer can judge the theme
+# without installing anything. It needs only a read-only token and no secrets, so pull requests from forks get it too.
+# The sticky pull request comment comes from theme-preview-comment.yml, a separate workflow_run workflow that only
+# reads the small preview.json this job uploads.
+name: Theme preview
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        description: PHP version to run core with.
+        type: string
+        default: '8.5'
+      locale:
+        description: Language of the preview page.
+        type: string
+        default: en-GB
+      composer-root-version:
+        description: The version Composer gives the theme itself, for a theme that core requires (theme-default).
+        type: string
+        default: ''
+    outputs:
+      artifact-url:
+        description: Where reviewers download the preview.
+        value: ${{ jobs.preview.outputs.artifact-url }}
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: theme preview
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
+    env:
+      OUT: ${{ github.workspace }}/build/theme-preview
+      TOOLS: ${{ github.workspace }}/build/theme-preview-tools
+      PR_NUMBER: ${{ github.event.pull_request.number || '0' }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: gd, intl, sodium, exif, fileinfo, pdo_sqlite
+          ini-values: date.timezone=UTC, memory_limit=512M
+          coverage: none
+          tools: composer:v2
+
+      - name: Install the theme with core as a dev dependency
+        env:
+          COMPOSER_ROOT_VERSION: ${{ inputs.composer-root-version }}
+        run: |
+          [ -n "$COMPOSER_ROOT_VERSION" ] || unset COMPOSER_ROOT_VERSION
+          composer update --no-interaction --no-progress --prefer-dist
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Install Playwright's Chromium and axe (tooling only, never part of the theme)
+        run: |
+          mkdir -p "$TOOLS"
+          cd "$TOOLS"
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund playwright@1 @axe-core/playwright@4
+          npx playwright install --with-deps chromium
+
+      - name: Find the theme
+        id: theme
+        run: |
+          cat > "$RUNNER_TEMP/theme.php" <<'PHP'
+          <?php
+          require 'vendor/autoload.php';
+          $theme = SightPress\Core\Theme\Preview\PreviewTheme::fromDirectory(getcwd());
+          file_put_contents(getenv('RUNNER_TEMP') . '/theme.json', json_encode([
+              'id' => $theme->id,
+              'name' => $theme->name,
+              'version' => $theme->version,
+              'previewDescription' => $theme->previewDescription,
+          ]));
+          echo $theme->id;
+          PHP
+          id=$(php "$RUNNER_TEMP/theme.php")
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "artifact=theme-preview-$id-pr${PR_NUMBER}-${HEAD_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate the theme
+        run: vendor/bin/sightpress-theme theme:validate .
+
+      - name: Render the preview page and take the screenshots
+        env:
+          NODE_PATH: ${{ github.workspace }}/build/theme-preview-tools/node_modules
+        run: vendor/bin/sightpress-theme theme:preview . --out="$OUT" --locale="${{ inputs.locale }}" --screenshot
+
+      - name: Scan the preview page with axe in light, dark and forced-colors mode
+        id: axe
+        if: ${{ !cancelled() && hashFiles(format('{0}/index.html', env.OUT)) != '' }}
+        run: |
+          cat > "$TOOLS/axe.mjs" <<'SCRIPT'
+          import { chromium } from 'playwright';
+          import AxeBuilder from '@axe-core/playwright';
+          import { writeFileSync } from 'node:fs';
+          import { pathToFileURL } from 'node:url';
+          const folder = process.argv[2];
+          const root = pathToFileURL(folder).href + '/';
+          const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+          const modes = { light: { colorScheme: 'light' }, dark: { colorScheme: 'dark' }, 'forced-colors': { forcedColors: 'active' } };
+          const browser = await chromium.launch();
+          const counts = {};
+          const report = [];
+          const outside = new Set();
+          for (const [mode, media] of Object.entries(modes)) {
+            const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+            const page = await context.newPage();
+            await page.route('**/*', (route) => route.request().url().startsWith(root) ? route.continue() : (outside.add(route.request().url()), route.abort()));
+            await page.emulateMedia(media);
+            await page.goto(root + 'index.html');
+            const { violations } = await new AxeBuilder({ page }).withTags(tags).analyze();
+            counts[mode] = violations.length;
+            report.push(`${mode}: ${violations.length === 0 ? 'no violations' : violations.length + ' violation' + (violations.length === 1 ? '' : 's')}`);
+            for (const v of violations) {
+              report.push(`  - ${v.id} (${v.impact}): ${v.help}. ${v.helpUrl}`);
+              for (const node of v.nodes) {
+                report.push(`      ${node.target.join(' ')}: ${node.failureSummary.replace(/\s+/g, ' ')}`);
+              }
+            }
+            await context.close();
+          }
+          await browser.close();
+          for (const url of outside) {
+            report.push(`Blocked a request that would leave the folder: ${url}`);
+          }
+          writeFileSync(folder + '/axe.txt', report.join('\n') + '\n');
+          writeFileSync(process.env.RUNNER_TEMP + '/axe.json', JSON.stringify(counts));
+          process.exit(Object.values(counts).some((n) => n > 0) || outside.size > 0 ? 1 : 0);
+          SCRIPT
+          cd "$TOOLS"
+          status=0
+          node axe.mjs "$OUT" || status=$?
+          cat "$OUT/axe.txt"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Add the README
+        if: ${{ !cancelled() && hashFiles(format('{0}/index.html', env.OUT)) != '' }}
+        run: |
+          cat > "$OUT/README.txt" <<EOF
+          Preview of the theme ${{ steps.theme.outputs.id }}, built from commit ${HEAD_SHA}.
+
+          Unzip this folder and open index.html in any browser. It works offline: nothing in it
+          loads anything from the internet.
+
+          screenshot.png and screenshot-dark.png show the top of the page at 1280 x 800 in light
+          and dark mode; page.png shows the whole page. axe.txt lists the accessibility problems
+          axe found in light, dark and forced-colors mode (none is the goal).
+          EOF
+
+      - name: Upload the preview
+        id: upload
+        if: ${{ !cancelled() && hashFiles(format('{0}/index.html', env.OUT)) != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.theme.outputs.artifact }}
+          path: ${{ env.OUT }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Write preview.json for the comment and the job summary
+        if: ${{ !cancelled() && steps.upload.outputs.artifact-url != '' }}
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          ARTIFACT_NAME: ${{ steps.theme.outputs.artifact }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/comment"
+          axe=$(cat "$RUNNER_TEMP/axe.json" 2>/dev/null || echo '{}')
+          jq -n \
+            --argjson pr "$PR_NUMBER" \
+            --arg sha "$HEAD_SHA" \
+            --arg url "$ARTIFACT_URL" \
+            --arg artifact "$ARTIFACT_NAME" \
+            --argjson theme "$(cat "$RUNNER_TEMP/theme.json")" \
+            --argjson axe "$axe" \
+            '{pr: $pr, sha: $sha, artifact: $artifact, url: $url, theme: $theme, axe: $axe}' > "$RUNNER_TEMP/comment/preview.json"
+          {
+            echo "## Theme preview: $(jq -r .theme.name "$RUNNER_TEMP/comment/preview.json") $(jq -r .theme.version "$RUNNER_TEMP/comment/preview.json")"
+            echo
+            echo "[Download the preview]($ARTIFACT_URL) ($ARTIFACT_NAME): unzip it and open index.html in any browser; it works offline."
+            echo
+            echo "**What it looks like:** $(jq -r '.theme.previewDescription // "The theme has no preview description yet."' "$RUNNER_TEMP/comment/preview.json")"
+            echo
+            echo "**Accessibility (axe, WCAG 2.2 AA):**"
+            for mode in light dark forced-colors; do
+              echo "- $mode: $(jq -r --arg m "$mode" '.axe[$m] // "not scanned" | if type == "number" then (if . == 0 then "no violations" else "\(.) violations" end) else . end' "$RUNNER_TEMP/comment/preview.json")"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload preview.json for the comment
+        if: ${{ !cancelled() && steps.upload.outputs.artifact-url != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: theme-preview-comment
+          path: ${{ runner.temp }}/comment/preview.json
+          retention-days: 5
+
+      - name: Fail when axe found problems
+        if: ${{ steps.axe.outputs.status != '' && steps.axe.outputs.status != '0' }}
+        run: |
+          echo "axe found accessibility problems on the preview page; see axe.txt in the artifact or the log above."
+          exit 1

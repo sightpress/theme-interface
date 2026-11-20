@@ -29,4 +29,8 @@ Accessibility:
 - The preview page holds one block of each core block type, in `PreviewPage::BLOCK_ORDER`, after the hero (the
   theme's name as `<h1>`, its description and a Download button whose accessible name starts with its label).
 
+- Pull request previews: reusable workflows `.github/workflows/theme-preview.yml` (artifact with the static
+  preview, screenshots, axe report) and `theme-preview-comment.yml` (one sticky comment, text first), called by
+  every theme repo pinned to a tag; see README "A preview on every pull request". Not in the Composer package.
+
 Code: `src/`; contract tests with a fake third-party theme in `tests/Unit/Contract/` and `tests/Fake/Theme/`.

@@ -1,0 +1,101 @@
+# The sticky pull request comment of the theme preview (reusable). A theme repo calls it from a workflow_run workflow
+# that follows its preview workflow:
+#
+#   on:
+#     workflow_run:
+#       workflows: [Theme preview]
+#       types: [completed]
+#   permissions:
+#     actions: read
+#     pull-requests: write
+#   jobs:
+#     comment:
+#       uses: sightpress/theme-interface/.github/workflows/theme-preview-comment.yml@0.2.1
+#
+# It never checks out or runs the pull request's code: it downloads only preview.json from the preview run, reads it as
+# data, checks that the pull request it names really is at the commit that was built, and creates or updates one
+# comment (marked <!-- sightpress-theme-preview -->) with the artifact link, how to open it, the theme's
+# previewDescription and the axe result for each mode. The comment is text first; it never relies on a picture.
+name: Theme preview comment
+
+on:
+  workflow_call:
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: theme preview comment
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    steps:
+      - name: Download preview.json
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: theme-preview-comment
+          path: ${{ runner.temp }}/comment
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Create or update the comment
+        if: ${{ steps.download.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BUILT_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          file="$RUNNER_TEMP/comment/preview.json"
+          pr=$(jq -r '.pr | select(type == "number" and . > 0)' "$file")
+          if [ -z "$pr" ]; then
+            echo "preview.json names no pull request."
+            exit 0
+          fi
+          head=$(gh api "repos/$REPO/pulls/$pr" --jq .head.sha)
+          if [ "$head" != "$BUILT_SHA" ] || [ "$(jq -r .sha "$file")" != "$BUILT_SHA" ]; then
+            echo "Pull request #$pr is not at the commit that was built ($BUILT_SHA); no comment."
+            exit 0
+          fi
+          # Every value is data: keep only plain text, no markup.
+          text() { jq -r "$1" "$file" | tr -d '<>`[]|\r' | tr '\n' ' ' | sed 's/ *$//' | cut -c1-600; }
+          name=$(text '.theme.name // "the theme"')
+          version=$(text '.theme.version // ""')
+          description=$(text '.theme.previewDescription // "The theme has no preview description yet (previewDescription in its manifest)."')
+          artifact=$(text '.artifact // "theme-preview"')
+          url=$(jq -r '.url // ""' "$file")
+          case "$url" in
+            "https://github.com/$REPO/actions/runs/"*) ;;
+            *) url="$RUN_URL" ;;
+          esac
+          axe() {
+            jq -r --arg m "$1" '.axe[$m] | if type == "number" then (if . == 0 then "no violations" elif . == 1 then "1 violation" else "\(.) violations" end) else "not scanned" end' "$file"
+          }
+          body=$(cat <<EOF
+          <!-- sightpress-theme-preview -->
+          ## Theme preview: $name $version
+
+          **[Download the preview]($url)** ($artifact, kept for 30 days). Unzip it and open \`index.html\` in any browser: it works offline and needs no PHP. It also holds \`screenshot.png\`, \`screenshot-dark.png\`, \`page.png\` and the axe report \`axe.txt\`.
+
+          **What it looks like (the theme's own description):** $description
+
+          **Accessibility (axe, WCAG 2.2 AA) on the preview page:**
+          - Light mode: $(axe light)
+          - Dark mode: $(axe dark)
+          - Forced colours: $(axe forced-colors)
+
+          Built from commit $BUILT_SHA. A new push updates this comment.
+          EOF
+          )
+          body=$(printf '%s\n' "$body" | sed 's/^          //')
+          id=$(gh api --paginate "repos/$REPO/issues/$pr/comments" --jq '.[] | select(.body | startswith("<!-- sightpress-theme-preview -->")) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null
+            echo "Updated the preview comment on #$pr."
+          else
+            gh api --method POST "repos/$REPO/issues/$pr/comments" -f body="$body" > /dev/null
+            echo "Added the preview comment to #$pr."
+          fi
