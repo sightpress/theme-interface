@@ -23,6 +23,10 @@ Accessibility:
 - The shell must set `lang` and `dir`, have a skip link and landmarks, show messages in a polite live region, and
   include the core `<head>` partial. The search form is a `<search>` landmark named by its visible label; the
   search page announces the number of results through `<title>` and `<h1>`, not a live region.
-- Screenshots need alt text that describes the look of the theme.
+- A theme ships no screenshot (0.2): core makes every screenshot from the preview page
+  (`resources/preview/page.json`, `Preview\PreviewPage`); its alt text is the manifest's `previewDescription`,
+  which describes the look in words. `Screenshot` is deprecated in 0.2 and removed in 0.3.
+- The preview page holds one block of each core block type, in `PreviewPage::BLOCK_ORDER`, after the hero (the
+  theme's name as `<h1>`, its description and a Download button whose accessible name starts with its label).
 
 Code: `src/`; contract tests with a fake third-party theme in `tests/Unit/Contract/` and `tests/Fake/Theme/`.

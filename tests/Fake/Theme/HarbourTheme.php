@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SightPress\Theme\Tests\Fake\Theme;
 
 use SightPress\Theme\LayoutDefinition;
-use SightPress\Theme\Screenshot;
 use SightPress\Theme\ThemeInterface;
 use SightPress\Theme\ThemeManifest;
 use SightPress\Theme\ThemePaths;
@@ -26,10 +25,10 @@ final class HarbourTheme implements ThemeInterface
             requires: new ThemeRequirement('^0.2'),
             layouts: [...LayoutDefinition::required(), LayoutDefinition::standard()[1]],
             locales: ['en-GB', 'pt'],
-            screenshot: new Screenshot('assets/screenshot.png', 'Home page with a dark blue header and three cards.'),
             suggestedModules: ['acme.events'],
             author: 'Acme Ltd',
             licence: 'GPL-3.0-or-later',
+            previewDescription: 'A dark blue top bar, then a large white heading on a pale blue band and a yellow Download button.',
         );
     }
 

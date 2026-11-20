@@ -1,0 +1,169 @@
+{
+  "$schema": "https://sightpress.org/schema/theme-interface/0.2/preview/page.schema.json",
+  "version": "0.2",
+  "locale": "en-GB",
+  "site": {
+    "name": "Riverside Reading Room",
+    "tagline": "A small community library by the river, open six days a week."
+  },
+  "hero": {
+    "heading": "{{ theme.name }}",
+    "lead": "{{ theme.description }}",
+    "button": {
+      "label": "Download",
+      "accessible_name": "Download {{ theme.name }}",
+      "url": "{{ theme.download_url }}"
+    }
+  },
+  "sections": [
+    {
+      "id": "text",
+      "heading": "Text and buttons",
+      "blocks": [
+        {
+          "type": "heading",
+          "version": 1,
+          "data": {
+            "text": "Welcome to the reading room",
+            "level": 3
+          }
+        },
+        {
+          "type": "rich_text",
+          "version": 1,
+          "data": {
+            "html": "<p>The Riverside Reading Room is run by <strong>volunteers</strong> from the neighbourhood. Anyone can come in, sit by the window and read, <em>no library card needed</em>.</p><p>Bring the children on Saturday mornings for stories, or <a href=\"#contact\">ask us about a group visit</a>.</p><ul><li>Large-print and audio books</li><li>A quiet room with a magnifier and a screen reader</li><li>Free tea on Thursdays</li></ul>"
+          }
+        },
+        {
+          "type": "call_to_action",
+          "version": 1,
+          "data": {
+            "text": "Plan your visit",
+            "url": "#contact",
+            "style": "primary"
+          }
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "heading": "Pictures and files",
+      "blocks": [
+        {
+          "type": "image",
+          "version": 1,
+          "data": {
+            "media": "@picture",
+            "alt": "Coloured bars, a soft gradient and circles: the reading room's test card.",
+            "caption": "The poster in our front window."
+          }
+        },
+        {
+          "type": "file_download",
+          "version": 1,
+          "data": {
+            "media": "@document",
+            "text": "Opening hours and holiday closures"
+          }
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "heading": "Side by side",
+      "blocks": [
+        {
+          "type": "columns",
+          "version": 1,
+          "data": {
+            "columns": [
+              {
+                "blocks": [
+                  {
+                    "type": "rich_text",
+                    "version": 1,
+                    "data": {
+                      "html": "<p><strong>Weekdays:</strong> the reading room opens at 10:00 and closes at 18:00. The quiet room can be booked for an hour at a time.</p>"
+                    }
+                  }
+                ]
+              },
+              {
+                "blocks": [
+                  {
+                    "type": "rich_text",
+                    "version": 1,
+                    "data": {
+                      "html": "<p><strong>Saturdays:</strong> story time starts at 10:30. Parents and carers stay with their children; the room gets busy, so come early.</p>"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "gallery",
+          "version": 1,
+          "data": {
+            "images": [
+              {
+                "media": "@picture",
+                "alt": "The test card again, as it looks on the noticeboard by the door.",
+                "caption": "By the door."
+              },
+              {
+                "media": "@picture",
+                "decorative": true
+              }
+            ],
+            "caption": "Two posters from the reading room."
+          }
+        }
+      ]
+    },
+    {
+      "id": "sound",
+      "heading": "Sound and video",
+      "blocks": [
+        {
+          "type": "audio",
+          "version": 1,
+          "data": {
+            "media": "@audio",
+            "title": "The opening bell",
+            "transcript": "A single tone plays for two seconds, the sound of our opening bell. Nobody speaks."
+          }
+        },
+        {
+          "type": "video",
+          "version": 1,
+          "data": {
+            "media": "@video",
+            "title": "A short look at the reading room's test card",
+            "captions": "@captions",
+            "captions_language": "en-GB",
+            "transcript": "A gentle tone plays for two seconds over moving coloured test patterns. Nobody speaks."
+          }
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "heading": "Contact",
+      "blocks": [
+        {
+          "type": "contact_form",
+          "version": 1,
+          "data": {
+            "recipient": "hello@example.org",
+            "subject": "A question about the reading room",
+            "submit_text": "Send your question",
+            "success_text": "Thank you. A volunteer answers within two days."
+          }
+        }
+      ]
+    }
+  ]
+}

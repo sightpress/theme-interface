@@ -22,7 +22,6 @@ use SightPress\Theme\Token\ColorMode;
 use SightPress\Theme\Token\ColorUse;
 use SightPress\Theme\Token\TokenGroup;
 use SightPress\Theme\Internal\Guard;
-use SightPress\Theme\Screenshot;
 use SightPress\Theme\Template\TemplateFunction;
 use SightPress\Theme\Template\TemplateVariable;
 use SightPress\Theme\ThemeRequirement;
@@ -45,7 +44,6 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[CoversClass(CorePartial::class)]
 #[UsesClass(Guard::class)]
 #[UsesClass(LayoutDefinition::class)]
-#[UsesClass(Screenshot::class)]
 #[UsesClass(TemplateFunction::class)]
 #[UsesClass(TemplateVariable::class)]
 #[UsesClass(ThemeRequirement::class)]
@@ -74,6 +72,19 @@ final class HarbourThemeTest extends TestCase
         }
         self::assertSame('sidebar', $manifest->resolveLayout('sidebar')->id);
         self::assertSame(LayoutDefinition::FALLBACK, $manifest->resolveLayout('landing')->id);
+    }
+
+    public function testDescribesItsPreviewAndShipsNoScreenshot(): void
+    {
+        $manifest = $this->theme->manifest();
+
+        self::assertNotNull($manifest->previewDescription);
+        self::assertNull($manifest->screenshot);
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->theme->paths()->root, \FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            self::assertInstanceOf(\SplFileInfo::class, $file);
+            self::assertDoesNotMatchRegularExpression('/^screenshot\./i', $file->getFilename());
+        }
     }
 
     public function testThemeJsonMatchesTheSchemaAndTheManifest(): void

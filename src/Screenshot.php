@@ -8,6 +8,10 @@ use SightPress\Theme\Internal\Guard;
 
 /**
  * A picture of the theme for the theme picker, with the text alternative people using a screen reader get instead.
+ *
+ * @deprecated since 0.2, removed in 0.3: a theme package ships no screenshot. Core makes every screenshot from the
+ *             theme's preview page ({@see Preview\PreviewPage}); its alt text is
+ *             {@see ThemeManifest::$previewDescription}. Core ignores the path and warns.
  */
 final readonly class Screenshot
 {

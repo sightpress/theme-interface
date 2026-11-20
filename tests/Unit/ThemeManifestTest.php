@@ -38,6 +38,7 @@ final class ThemeManifestTest extends TestCase
         self::assertSame([], $manifest->suggestedModules);
         self::assertNull($manifest->author);
         self::assertNull($manifest->licence);
+        self::assertNull($manifest->previewDescription);
     }
 
     public function testEverything(): void
@@ -57,6 +58,7 @@ final class ThemeManifestTest extends TestCase
             ['acme.events', 'blog'],
             'SightPress',
             'GPL-3.0-or-later',
+            ' A white page with a dark blue top bar. ',
         );
 
         self::assertSame('SightPress Default', $manifest->name);
@@ -68,6 +70,7 @@ final class ThemeManifestTest extends TestCase
         self::assertSame(['acme.events', 'blog'], $manifest->suggestedModules);
         self::assertSame('SightPress', $manifest->author);
         self::assertSame('GPL-3.0-or-later', $manifest->licence);
+        self::assertSame('A white page with a dark blue top bar.', $manifest->previewDescription);
     }
 
     public function testResolvesLayoutsWithTheFallback(): void
@@ -175,6 +178,10 @@ final class ThemeManifestTest extends TestCase
             static fn (): ThemeManifest => self::manifest(licence: ''),
             'The licence of theme "acme-harbour" (use null for none) must not be empty.',
         ];
+        yield 'blank preview description' => [
+            static fn (): ThemeManifest => self::manifest(previewDescription: ' '),
+            'The preview description of theme "acme-harbour" (use null for none) must not be empty.',
+        ];
     }
 
     /**
@@ -203,6 +210,7 @@ final class ThemeManifestTest extends TestCase
         array $suggestedModules = [],
         ?string $author = null,
         ?string $licence = null,
+        ?string $previewDescription = null,
     ): ThemeManifest {
         /** @var list<LayoutDefinition> $layouts */
         return new ThemeManifest(
@@ -216,6 +224,7 @@ final class ThemeManifestTest extends TestCase
             suggestedModules: $suggestedModules,
             author: $author,
             licence: $licence,
+            previewDescription: $previewDescription,
         );
     }
 }

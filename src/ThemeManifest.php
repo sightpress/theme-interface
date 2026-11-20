@@ -61,6 +61,13 @@ final readonly class ThemeManifest
     public array $suggestedModules;
 
     /**
+     * What the theme looks like, in words: the alt text of the screenshots core makes from the theme's preview page.
+     *
+     * @var non-empty-string|null
+     */
+    public ?string $previewDescription;
+
+    /**
      * @param string                 $id               unique theme id (see {@see ID_PATTERN})
      * @param string                 $name             name shown in the theme picker, for example "Harbour"
      * @param string                 $description      one or two sentences for the theme picker
@@ -72,10 +79,18 @@ final readonly class ThemeManifest
      *                                                 translated to; empty means every language core supports
      * @param bool                   $rightToLeft      whether the theme works in right-to-left scripts such as
      *                                                 Arabic and Hebrew (mirrored layout, logical CSS properties)
-     * @param Screenshot|null        $screenshot       picture for the theme picker
+     * @param Screenshot|null        $screenshot       deprecated since 0.2 and removed in 0.3: core ignores the
+     *                                                 path and warns, because a theme package ships no screenshot;
+     *                                                 core makes them from the preview page (use
+     *                                                 $previewDescription for the alt text)
      * @param list<string>           $suggestedModules ids of modules that go well with the theme; never required
      * @param string|null            $author           person or organisation, for example "Acme Ltd"
      * @param string|null            $licence          SPDX licence id, for example `GPL-3.0-or-later`
+     * @param string|null            $previewDescription what the top of the theme's preview page looks like, for
+     *                                                 people who can't see its screenshot, for example "Top bar in
+     *                                                 dark blue, a large white heading on a teal band and a yellow
+     *                                                 Download button"; describe the look, not the file. Optional in
+     *                                                 0.2, required from 0.3
      */
     public function __construct(
         string $id,
@@ -86,10 +101,12 @@ final readonly class ThemeManifest
         array $layouts = [],
         array $locales = [],
         public bool $rightToLeft = true,
+        /** @deprecated since 0.2, removed in 0.3: themes ship no screenshot; see $previewDescription */
         public ?Screenshot $screenshot = null,
         array $suggestedModules = [],
         public ?string $author = null,
         public ?string $licence = null,
+        ?string $previewDescription = null,
     ) {
         $this->id = Guard::matches($id, self::ID_PATTERN, 'Theme id', self::ID_RULE);
         $this->name = Guard::notBlank(trim($name), sprintf('Name of theme "%s"', $id));
@@ -137,6 +154,9 @@ final readonly class ThemeManifest
                 Guard::notBlank($value, sprintf('The %s of theme "%s" (use null for none)', $field, $id));
             }
         }
+        $this->previewDescription = $previewDescription === null
+            ? null
+            : Guard::notBlank(trim($previewDescription), sprintf('The preview description of theme "%s" (use null for none)', $id));
     }
 
     /**

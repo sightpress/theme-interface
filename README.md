@@ -31,8 +31,9 @@ package and names its theme class in `composer.json`:
 - `ThemeManifest`: the theme's id, name, description and version, the `ThemeRequirement` (the versions of this
   package it works with), the layouts it provides (`LayoutDefinition`; `pageLayouts()` are the ones editors can
   pick), the languages its own strings are
-  translated to, whether it supports right-to-left scripts, a `Screenshot` with alt text for the theme picker,
-  suggested modules, author and licence.
+  translated to, whether it supports right-to-left scripts, suggested modules, author, licence and
+  `previewDescription`: the alt text of the theme's screenshots, which describes the look in words. (`Screenshot`
+  is deprecated since 0.2 and removed in 0.3: core ignores its path and warns.)
 - `ThemePaths`: the theme folder and the standard places in it: `theme.json`, `templates/`, `assets/` and
   `translations/`.
 - `ThemeSchema` and `resources/theme.schema.json`: the JSON Schema (draft 2020-12) of `theme.json`.
@@ -49,6 +50,11 @@ package and names its theme class in `composer.json`:
   with the variables core passes (`TemplateVariable`) and the blocks it must define. `forLayout()` gives the
   definition for any layout, including the standard and the theme's own ones. The search form is a `<search>`
   landmark; the search page says how many results there are in its `<title>` and `<h1>`, not in a live region.
+- `Preview\PreviewPage` and `resources/preview/page.json`: the sample page every theme is previewed with, and its
+  schema (`page.schema.json`). Core's `theme:preview` renders it with the theme applied to a static folder that
+  opens offline: the top navbar, a hero with the theme's name, description and a Download button, one block of each
+  core block type from the most essential to the most complex (`BLOCK_ORDER`), and the footer. Media are named by
+  role (`@picture`, `@video`, `@captions`, `@audio`, `@document`); core supplies the files.
 - `Template\CorePartial`: the core partials a theme must include, such as the `<head>` partial with meta,
   canonical links and JSON-LD, so a theme can't drop them.
 - `Template\TemplateApi`: the Twig functions and filters core provides to theme templates (`asset`, `t`, `can`,
@@ -64,6 +70,13 @@ theme is missing.
 
 `ThemeInterface` changes only in a major release. Core may add optional template variables and template functions
 in a minor release; removing or changing one is a major release.
+
+### No screenshot in a theme package
+
+A theme package ships no screenshot or other preview output. Every picture of a theme, in the theme picker, the
+documentation, a README or a release, and on every pull request, is made from its preview page, so it always shows
+the theme as it is. Describe what the top of that page looks like in `previewDescription`, for example "A dark
+blue top bar, then a large white heading on a pale blue band and a yellow Download button".
 
 ## Requirements
 

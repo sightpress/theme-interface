@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sightpress.org/schema/theme-interface/0.2/preview/page.schema.json",
+  "title": "SightPress theme preview page",
+  "description": "The sample page core's theme:preview renders with a theme applied, to make the theme's screenshots and its static preview. Core supplies the header with the top navbar (skip link, site name, one link per section) and the footer; this file holds the hero and the sections. The blocks of every section, read in order, follow PreviewPage::BLOCK_ORDER, and every core block type appears exactly once outside a columns block. Media are named by role (@picture, @video, @captions, @audio, @document) and core supplies the files. Text may use the preview variables {{ theme.name }}, {{ theme.description }}, {{ theme.version }} and {{ theme.download_url }}, and no others.",
+  "type": "object",
+  "required": ["version", "locale", "site", "hero", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "description": "The theme-interface minor version this page belongs to.",
+      "const": "0.2"
+    },
+    "locale": {
+      "description": "Language of the text, a BCP 47 tag.",
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-(?:[A-Z]{2}|\\d{3}))?$"
+    },
+    "site": {
+      "description": "The made-up site the page belongs to; core names the throwaway preview site after it.",
+      "type": "object",
+      "required": ["name", "tagline"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "tagline": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "hero": {
+      "description": "The opening band, right after the navbar: the theme's name as the page's only <h1>, its description, and a Download button.",
+      "type": "object",
+      "required": ["heading", "lead", "button"],
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "const": "{{ theme.name }}"
+        },
+        "lead": {
+          "const": "{{ theme.description }}"
+        },
+        "button": {
+          "type": "object",
+          "required": ["label", "accessible_name", "url"],
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "description": "The visible label.",
+              "const": "Download"
+            },
+            "accessible_name": {
+              "description": "Starts with the visible label (WCAG 2.5.3 Label in Name).",
+              "const": "Download {{ theme.name }}"
+            },
+            "url": {
+              "const": "{{ theme.download_url }}"
+            }
+          }
+        }
+      }
+    },
+    "sections": {
+      "description": "The parts of the page, each with an <h2> and a navbar link to its id.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "heading", "blocks"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The section's id, the target of its navbar link (#id).",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "heading": {
+            "$ref": "#/$defs/text"
+          },
+          "blocks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/$defs/block"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "block": {
+      "description": "A block as core stores it.",
+      "type": "object",
+      "required": ["type", "version", "data"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "data": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
