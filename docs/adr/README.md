@@ -8,4 +8,4 @@ file names `NNNN-short-title.md`, start from core's `0000-template.md`, statuses
 
 ## Index
 
-- [0001 — Theme architecture](0001-theme-architecture.md) (Proposed)
+- [0001 — Theme architecture](0001-theme-architecture.md) (Accepted)

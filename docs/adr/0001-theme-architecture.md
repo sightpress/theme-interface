@@ -1,6 +1,6 @@
 # 0001 — Theme architecture: presentation-only packages, a contract that describes, core that enforces
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-20
 
 ## Context
