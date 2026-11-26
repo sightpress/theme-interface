@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.0](https://github.com/sightpress/theme-interface/compare/0.2.1...0.3.0) (2026-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Screenshot and ThemeManifest::$screenshot are removed; ThemeManifest needs a previewDescription. Themes declare ^0.3.
+
+### Features
+
+* add the page_list, embed and sign_language_video samples to the preview page, and remove Screenshot (BL-2) ([#13](https://github.com/sightpress/theme-interface/issues/13)) ([ef86dde](https://github.com/sightpress/theme-interface/commit/ef86dded3890cef5e35bae5158f2d8706bdf4ec1))
+
+
+### Documentation
+
+* accept ADR 0001 (theme architecture) ([#11](https://github.com/sightpress/theme-interface/issues/11)) ([4798958](https://github.com/sightpress/theme-interface/commit/479895869a428bb6674d0f7a88deb3ee430e573c))
+
 ## [0.2.1](https://github.com/sightpress/theme-interface/compare/0.2.0...0.2.1) (2026-11-20)
 
 
