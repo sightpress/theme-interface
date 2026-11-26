@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SightPress\Theme\Exception\InvalidValueException;
 use SightPress\Theme\LayoutDefinition;
-use SightPress\Theme\Screenshot;
 use SightPress\Theme\ThemeManifest;
 use SightPress\Theme\ThemeRequirement;
 use SightPress\Theme\Internal\Guard;
@@ -18,7 +17,6 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[CoversClass(ThemeManifest::class)]
 #[UsesClass(Guard::class)]
 #[UsesClass(LayoutDefinition::class)]
-#[UsesClass(Screenshot::class)]
 #[UsesClass(ThemeRequirement::class)]
 final class ThemeManifestTest extends TestCase
 {
@@ -34,17 +32,15 @@ final class ThemeManifestTest extends TestCase
         self::assertEquals(LayoutDefinition::required(), $manifest->layouts);
         self::assertSame([], $manifest->locales);
         self::assertTrue($manifest->rightToLeft);
-        self::assertNull($manifest->screenshot);
         self::assertSame([], $manifest->suggestedModules);
         self::assertNull($manifest->author);
         self::assertNull($manifest->licence);
-        self::assertNull($manifest->previewDescription);
+        self::assertSame('A dark blue top bar.', $manifest->previewDescription);
     }
 
     public function testEverything(): void
     {
         $sidebar = new LayoutDefinition('sidebar', 'Sidebar');
-        $screenshot = new Screenshot('screenshot.png', 'The home page.');
         $manifest = new ThemeManifest(
             'default',
             ' SightPress Default ',
@@ -54,7 +50,6 @@ final class ThemeManifestTest extends TestCase
             [...LayoutDefinition::required(), $sidebar],
             ['en-GB', 'pt', 'zh-Hant-TW', 'es-419'],
             false,
-            $screenshot,
             ['acme.events', 'blog'],
             'SightPress',
             'GPL-3.0-or-later',
@@ -66,7 +61,6 @@ final class ThemeManifestTest extends TestCase
         self::assertSame($sidebar, $manifest->layout('sidebar'));
         self::assertSame(['en-GB', 'pt', 'zh-Hant-TW', 'es-419'], $manifest->locales);
         self::assertFalse($manifest->rightToLeft);
-        self::assertSame($screenshot, $manifest->screenshot);
         self::assertSame(['acme.events', 'blog'], $manifest->suggestedModules);
         self::assertSame('SightPress', $manifest->author);
         self::assertSame('GPL-3.0-or-later', $manifest->licence);
@@ -93,6 +87,7 @@ final class ThemeManifestTest extends TestCase
             '1.0.0',
             new ThemeRequirement('^0.2'),
             [...LayoutDefinition::required(), ...LayoutDefinition::standard()],
+            previewDescription: 'A dark blue top bar.',
         );
 
         self::assertSame(
@@ -180,7 +175,11 @@ final class ThemeManifestTest extends TestCase
         ];
         yield 'blank preview description' => [
             static fn (): ThemeManifest => self::manifest(previewDescription: ' '),
-            'The preview description of theme "acme-harbour" (use null for none) must not be empty.',
+            'The preview description of theme "acme-harbour" (what the top of its preview page looks like, in words) must not be empty.',
+        ];
+        yield 'no preview description' => [
+            static fn (): ThemeManifest => self::manifest(previewDescription: null),
+            'The preview description of theme "acme-harbour" (what the top of its preview page looks like, in words) must not be empty.',
         ];
     }
 
@@ -210,7 +209,7 @@ final class ThemeManifestTest extends TestCase
         array $suggestedModules = [],
         ?string $author = null,
         ?string $licence = null,
-        ?string $previewDescription = null,
+        ?string $previewDescription = 'A dark blue top bar.',
     ): ThemeManifest {
         /** @var list<LayoutDefinition> $layouts */
         return new ThemeManifest(

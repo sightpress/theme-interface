@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sightpress.org/schema/theme-interface/0.2/preview/page.schema.json",
+  "$id": "https://sightpress.org/schema/theme-interface/0.3/preview/page.schema.json",
   "title": "SightPress theme preview page",
   "description": "The sample page core's theme:preview renders with a theme applied, to make the theme's screenshots and its static preview. Core supplies the header with the top navbar (skip link, site name, one link per section) and the footer; this file holds the hero and the sections. The blocks of every section, read in order, follow PreviewPage::BLOCK_ORDER, and every core block type appears exactly once outside a columns block. Media are named by role (@picture, @video, @captions, @audio, @document) and core supplies the files. Text may use the preview variables {{ theme.name }}, {{ theme.description }}, {{ theme.version }} and {{ theme.download_url }}, and no others.",
   "type": "object",
@@ -12,7 +12,7 @@
     },
     "version": {
       "description": "The theme-interface minor version this page belongs to.",
-      "const": "0.2"
+      "const": "0.3"
     },
     "locale": {
       "description": "Language of the text, a BCP 47 tag.",
@@ -114,6 +114,13 @@
         },
         "data": {
           "type": "object"
+        },
+        "styles": {
+          "description": "The block's looks that differ from the default, as core stores them: a variant and shared options such as align or background.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     }

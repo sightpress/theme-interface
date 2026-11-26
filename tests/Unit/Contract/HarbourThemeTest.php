@@ -78,8 +78,7 @@ final class HarbourThemeTest extends TestCase
     {
         $manifest = $this->theme->manifest();
 
-        self::assertNotNull($manifest->previewDescription);
-        self::assertNull($manifest->screenshot);
+        self::assertStringStartsWith('A dark blue top bar', $manifest->previewDescription);
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->theme->paths()->root, \FilesystemIterator::SKIP_DOTS));
         foreach ($files as $file) {
             self::assertInstanceOf(\SplFileInfo::class, $file);

@@ -22,7 +22,7 @@ use SightPress\Theme\Internal\Guard;
 final class PreviewPage
 {
     /** The schema's `$id`; it changes with every minor release of this package that changes the page. */
-    public const string SCHEMA_ID = 'https://sightpress.org/schema/theme-interface/0.2/preview/page.schema.json';
+    public const string SCHEMA_ID = 'https://sightpress.org/schema/theme-interface/0.3/preview/page.schema.json';
 
     /**
      * Every block type the page can hold, in the order the page shows them: the essential ones first, the complex

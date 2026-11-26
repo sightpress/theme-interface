@@ -31,6 +31,9 @@ final class PreviewPageContractTest extends TestCase
         'audio',
         'video',
         'contact_form',
+        'page_list',
+        'embed',
+        'sign_language_video',
     ];
 
     public function testThePageMatchesItsSchema(): void

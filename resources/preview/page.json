@@ -1,6 +1,6 @@
 {
-  "$schema": "https://sightpress.org/schema/theme-interface/0.2/preview/page.schema.json",
-  "version": "0.2",
+  "$schema": "https://sightpress.org/schema/theme-interface/0.3/preview/page.schema.json",
+  "version": "0.3",
   "locale": "en-GB",
   "site": {
     "name": "Riverside Reading Room",
@@ -161,6 +161,44 @@
             "subject": "A question about the reading room",
             "submit_text": "Send your question",
             "success_text": "Thank you. A volunteer answers within two days."
+          }
+        }
+      ]
+    },
+    {
+      "id": "around",
+      "heading": "Find your way",
+      "blocks": [
+        {
+          "type": "page_list",
+          "version": 1,
+          "data": {
+            "source": "latest_changed_pages",
+            "count": 3,
+            "show_summaries": true
+          },
+          "styles": {
+            "variant": "cards"
+          }
+        },
+        {
+          "type": "embed",
+          "version": 1,
+          "data": {
+            "url": "https://www.openstreetmap.org/?mlat=51.5072&mlon=-0.1276#map=17/51.5072/-0.1276",
+            "title": "Map of the streets around the reading room"
+          }
+        },
+        {
+          "type": "sign_language_video",
+          "version": 1,
+          "data": {
+            "media": "@video",
+            "title": "Welcome to the reading room",
+            "sign_language": "british",
+            "captions": "@captions",
+            "captions_language": "en-GB",
+            "transcript": "A volunteer signs: welcome to the Riverside Reading Room. Come in, sit by the window and read. No library card needed."
           }
         }
       ]

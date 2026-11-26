@@ -25,9 +25,13 @@ Accessibility:
   search page announces the number of results through `<title>` and `<h1>`, not a live region.
 - A theme ships no screenshot (0.2): core makes every screenshot from the preview page
   (`resources/preview/page.json`, `Preview\PreviewPage`); its alt text is the manifest's `previewDescription`,
-  which describes the look in words. `Screenshot` is deprecated in 0.2 and removed in 0.3.
+  which describes the look in words. `Screenshot` was deprecated in 0.2 and is removed in 0.3, where
+  `previewDescription` is required.
 - The preview page holds one block of each core block type, in `PreviewPage::BLOCK_ORDER`, after the hero (the
   theme's name as `<h1>`, its description and a Download button whose accessible name starts with its label).
+  0.3 adds a "Find your way" section with `page_list` (as cards), `embed` (an OpenStreetMap map, which loads only
+  when the reader asks) and `sign_language_video` (BL-2), and lets a sample block carry `styles` (a variant and
+  shared options, as core stores them since BL-1).
 
 - Pull request previews: reusable workflows `.github/workflows/theme-preview.yml` (artifact with the static
   preview, screenshots, axe report) and `theme-preview-comment.yml` (one sticky comment, text first), called by

@@ -22,7 +22,7 @@ final class HarbourTheme implements ThemeInterface
             name: 'Harbour',
             description: 'Calm blues with large type, for organisations that publish a lot of reading.',
             version: '1.2.0',
-            requires: new ThemeRequirement('^0.2'),
+            requires: new ThemeRequirement('^0.3'),
             layouts: [...LayoutDefinition::required(), LayoutDefinition::standard()[1]],
             locales: ['en-GB', 'pt'],
             suggestedModules: ['acme.events'],

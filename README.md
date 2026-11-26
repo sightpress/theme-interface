@@ -20,7 +20,7 @@ package and names its theme class in `composer.json`:
 ```json
 {
   "type": "sightpress-theme",
-  "require": { "sightpress/theme-interface": "^0.2" },
+  "require": { "sightpress/theme-interface": "^0.3" },
   "extra": { "sightpress": { "theme": "Acme\\Harbour\\HarbourTheme" } }
 }
 ```
@@ -32,8 +32,8 @@ package and names its theme class in `composer.json`:
   package it works with), the layouts it provides (`LayoutDefinition`; `pageLayouts()` are the ones editors can
   pick), the languages its own strings are
   translated to, whether it supports right-to-left scripts, suggested modules, author, licence and
-  `previewDescription`: the alt text of the theme's screenshots, which describes the look in words. (`Screenshot`
-  is deprecated since 0.2 and removed in 0.3: core ignores its path and warns.)
+  `previewDescription` (required since 0.3): the alt text of the theme's screenshots, which describes the look in
+  words. A theme ships no screenshot: the `Screenshot` class was removed in 0.3.
 - `ThemePaths`: the theme folder and the standard places in it: `theme.json`, `templates/`, `assets/` and
   `translations/`.
 - `ThemeSchema` and `resources/theme.schema.json`: the JSON Schema (draft 2020-12) of `theme.json`.
@@ -91,7 +91,7 @@ permissions:
   contents: read
 jobs:
   preview:
-    uses: sightpress/theme-interface/.github/workflows/theme-preview.yml@0.2.1
+    uses: sightpress/theme-interface/.github/workflows/theme-preview.yml@0.3.0
 ```
 
 ```yaml
@@ -106,7 +106,7 @@ permissions:
   pull-requests: write
 jobs:
   comment:
-    uses: sightpress/theme-interface/.github/workflows/theme-preview-comment.yml@0.2.1
+    uses: sightpress/theme-interface/.github/workflows/theme-preview-comment.yml@0.3.0
 ```
 
 The first workflow installs the theme with core as a dev dependency (`sightpress/core` in `require-dev`), runs
